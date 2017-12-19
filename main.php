@@ -49,6 +49,12 @@ class Gallery {
     return $nullGuard;
   }
 
+  function slugify($name) {
+    $slug = preg_replace("/\s+/", "-", strtolower($name));
+    $slug = preg_replace("/\-+/", "-", $slug);
+    return $slug;
+  }
+
   function add_image($category_slug, $title, $url) {
     $cat = &$this->search_for_category($category_slug, true);
     if($cat != null) {
@@ -79,8 +85,7 @@ class Gallery {
 
     // echo json_encode($this->data);
     $categories = &$this->data["categories"];
-    $slug = preg_replace("/\s+/", "-", strtolower($display_name));
-    $slug = preg_replace("/\-+/", "-", $slug);
+    $slug = $this->slugify($display_name);
 
     $cat = $this->search_for_category($slug, true);
 
@@ -123,6 +128,19 @@ class Gallery {
     }
   }
 
+  function get_images($slug) {
+    if(array_key_exists("categories", $this->data)) {
+      $cat = &$this->search_for_category($slug, true);
+      if($cat != null) {
+        return $cat["images"];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
   function save_data($gallery_path) {
     file_put_contents($gallery_path, json_encode($this->data));
   }
@@ -160,16 +178,15 @@ function pds_test_app() {
 
   $gallery->add_category("Category Name");
   $gallery->add_category("New Category Name");
-  $gallery->add_image("new-category-name", "new image", "url");
-  $gallery->add_image("category-name", "new image", "url");
-  echo "time to remove removing<br><br>";
+  $gallery->add_image("new-category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
+  $gallery->add_image("category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
   $gallery->remove_category("category-name");
   $gallery->save_data($gallery_path);
 
   $media = get_media_library();
 
   // load admin page
-  include("test-admin.php");
+  include("admin-panel.php");
 }
 
 

@@ -16,7 +16,7 @@
           <ul>
             <?php foreach($cats as $cat => $cat_value) { ?>
               <li class="gallery-category">
-                <h3><?php echo $cat_value["display_name"]; ?></h3>
+                <a href="?page=<?php echo $_GET["page"]; ?>&category=<?php echo $cat_value["slug"]; ?>"><h3><?php echo $cat_value["display_name"]; ?></h3></a>
               </li>
             <?php } ?>
           </ul>
@@ -26,8 +26,33 @@
       </div>
       <div class="section right-section category-images">
         <?php
-
-        ?>
+        if( array_key_exists("category", $_GET) ) {
+          $category_query = $gallery->slugify($_GET["category"]);
+          $images = $gallery->get_images($category_query);
+          if($images != null) {
+            if(count($images) > 0) { ?>
+              <ul>
+              <?php foreach($images as $key => $image_data) { ?>
+                <li>
+                  <img src="<?php echo $image_data["url"]; ?>" alt="">
+                  <h3><?php echo $image_data["image_title"] ?></h3>
+                  <div class="tools">
+                    <div class="remove-from-category">
+                      Remove from Category
+                    </div>
+                  </div>
+                </li>
+              <?php } ?>
+              </ul>
+            <?php } else { ?>
+              <h2>No images in this category</h2>
+            <?php } ?>
+          <?php } else { ?>
+            <h2>No images in this category</h2>
+          <?php }
+        } else {?>
+          <h2>Pick a category</h2>
+        <?php } ?>
       </div>
     </div>
   </div>
