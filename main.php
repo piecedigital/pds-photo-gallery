@@ -176,12 +176,12 @@ function pds_test_app() {
 
   $gallery = new Gallery($data);
 
-  $gallery->add_category("Category Name");
-  $gallery->add_category("New Category Name");
-  $gallery->add_image("new-category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
-  $gallery->add_image("category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
-  $gallery->remove_category("category-name");
-  $gallery->save_data($gallery_path);
+  // $gallery->add_category("Category Name");
+  // $gallery->add_category("New Category Name");
+  // $gallery->add_image("new-category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
+  // $gallery->add_image("category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
+  // $gallery->remove_category("category-name");
+  // $gallery->save_data($gallery_path);
 
   $media = get_media_library();
 

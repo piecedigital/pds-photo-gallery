@@ -1,4 +1,6 @@
 <link rel="stylesheet" href="<?php echo plugin_dir_url(__FILE__) ?>style.css">
+<?php $base_query = "?page=$_GET[page]"; ?>
+
 <div class="pds-photo-gallery">
   <div class="gallery-manager">
     <h1>Photo Gallery Admin Panel</h1>
@@ -16,7 +18,7 @@
           <ul>
             <?php foreach($cats as $cat => $cat_value) { ?>
               <li class="gallery-category">
-                <a href="?page=<?php echo $_GET["page"]; ?>&category=<?php echo $cat_value["slug"]; ?>"><h3><?php echo $cat_value["display_name"]; ?></h3></a>
+                <a href="<?php echo $base_query . "&category=$cat_value[slug]"; ?>"><h3><?php echo $cat_value["display_name"]; ?></h3></a>
               </li>
             <?php } ?>
           </ul>
@@ -66,7 +68,9 @@
             </div>
             <div class="tools">
               <div class="add-to-category">
-                Add To Category
+                <a href="<?php echo $base_query . "&category=$_GET[category]&add_image=true&img_url=$url"; ?>">
+                  Add To Category
+                </a>
               </div>
             </div>
           </li>
