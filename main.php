@@ -26,11 +26,14 @@
 /**
  *
  */
+
 class Gallery {
   var $data;
+  var $gallery_path;
 
-  function __construct($data) {
+  function __construct($data, $gallery_path) {
     $this->data = $data ? $data : [];
+    $this->gallery_path = $gallery_path;
   }
 
   function &search_for_category($category_slug, $return_value=false) {
@@ -43,6 +46,21 @@ class Gallery {
           return $cat_value;
         } else {
           return $cat_key;
+        }
+      }
+    }
+    return $nullGuard;
+  }
+
+  function &search_for_image($images, $url, $return_value=false) {
+    $nullGuard = null;
+    foreach($images as $img_key => $img_data) {
+      if($img_data["url"] == $url) {
+        echo "$img_key | $img_data[url]";
+        if($return_value) {
+          return $img_data;
+        } else {
+          return $img_key;
         }
       }
     }
@@ -68,15 +86,23 @@ class Gallery {
     }
   }
 
-  // function remove_image($category_slug, $title, $url) {
-  //   $images = &$this->search_for_category($category_slug)["images"];
-  //   // echo json_encode($images);
-  //
-  //   array_push($images, [
-  //     "image_title" => $title,
-  //     "url" => $url
-  //   ]);
-  // }
+  function remove_image($category_slug, $url) {
+    echo "removing image";
+    echo "removing image";
+    echo "removing image";
+    $images = &$this->search_for_category($category_slug, true)["images"];
+    // echo json_encode($images);
+    if($images !== null) {
+      $index = &$this->search_for_image($images, $url);
+      if($index !== null) {
+        array_splice($images, $index, 1);
+      } else {
+        echo "Image not found";
+      }
+    } else {
+      echo "No images found";
+    }
+  }
 
   function add_category($display_name) {
     if( !isset($this->data["categories"]) ) {
@@ -109,9 +135,8 @@ class Gallery {
     // echo json_encode($this->data);
     $cats = &$this->data["categories"];
 
-    $cat = &$this->search_for_category($category_slug, true);
-    if($cat != null) {
-      $cat_index = &$this->search_for_category($category_slug);
+    $cat_index = &$this->search_for_category($category_slug);
+    if($cat_index !== null) {
       // echo "removing $cat_index <br><br>";
       array_splice($cats, $cat_index, 1);
     } else {
@@ -141,8 +166,8 @@ class Gallery {
     }
   }
 
-  function save_data($gallery_path) {
-    file_put_contents($gallery_path, json_encode($this->data));
+  function save_data() {
+    file_put_contents($this->gallery_path, json_encode($this->data));
   }
 
 }
@@ -164,9 +189,67 @@ function get_media_library() {
   return $list;
 }
 
-function pds_test_app() {
-  $gallery_path = plugin_dir_path(__FILE__) . 'gallery.json';
+function check_and_act_on_query_params($gallery) {
+  if(array_key_exists("add_image", $_GET) && $_GET["add_image"] == "true") {
+    if(array_key_exists("category", $_GET)) {
+      $image_url = $_GET["img_url"];
+      $image_url_array = explode("/", $image_url);
+      $image_name_dot = end( $image_url_array );
+      $image_name_dot_array = explode(".", $image_name_dot );
+      $image_name = current( $image_name_dot_array );
 
+      $gallery->add_image($_GET["category"], $image_name, $image_url);
+      $gallery->save_data();
+    } else {
+      echo "Need category to add an image";
+    }
+  };
+  if(array_key_exists("remove_image", $_GET) && $_GET["remove_image"] == "true") {
+    if(array_key_exists("category", $_GET)) {
+      $image_url = $_GET["img_url"];
+
+      $gallery->remove_image($_GET["category"], $image_url);
+      $gallery->save_data();
+    } else {
+      echo "Need category to add an image";
+    }
+  };
+  if(array_key_exists("add_category", $_GET) && $_GET["add_category"] == "true") {
+    if(array_key_exists("category", $_GET)) {
+      $gallery->add_category($_GET["category"]);
+      $gallery->save_data();
+    } else {
+      echo "Need category name";
+    }
+  };
+  if(array_key_exists("remove_category", $_GET) && $_GET["remove_category"] == "true") {
+    if(array_key_exists("category", $_GET)) {
+      $gallery->remove_category($_GET["category"]);
+      $gallery->save_data();
+    } else {
+      echo "Need category to add an image";
+    }
+  };
+
+  if(count($_GET) > 2) {
+    purge_query_params();
+  }
+}
+
+function purge_query_params() {
+  $url = $_SERVER["REQUEST_URI"];
+  $parsed_url = parse_url($url);
+  $new_url = $parsed_url["path"] . "?"
+  . "page" . "=" . $_GET["page"];
+  if(array_key_exists("category", $_GET)) {
+    $new_url .= "&category" . "=" . $_GET["category"];
+  }
+  header("Location: " . $new_url);
+  // die();
+}
+
+function &get_gallery() {
+  $gallery_path = plugin_dir_path(__FILE__) . 'gallery.json';
   // check if json file exists
   $fileExists = file_exists($gallery_path);
   $data = [];
@@ -174,14 +257,24 @@ function pds_test_app() {
     $data = json_decode( file_get_contents($gallery_path), true );
   }
 
-  $gallery = new Gallery($data);
+  $gallery = new Gallery($data, $gallery_path);
+  return $gallery;
+}
+
+function init() {
+  $gallery = &get_gallery();
+  check_and_act_on_query_params($gallery);
+}
+
+function pds_test_app() {
+  $gallery = &get_gallery();
 
   // $gallery->add_category("Category Name");
   // $gallery->add_category("New Category Name");
   // $gallery->add_image("new-category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
   // $gallery->add_image("category-name", "new image", "http://wordpress.local/wp-content/uploads/2017/12/used_btn_off.jpg");
   // $gallery->remove_category("category-name");
-  // $gallery->save_data($gallery_path);
+  // $gallery->save_data();
 
   $media = get_media_library();
 
@@ -192,6 +285,7 @@ function pds_test_app() {
 
 // initiation
 function pds_test_ui() {
+  init();
   add_media_page(_("Photo Gallery"), _("Photo Gallery"), "manage_options", _("Photo Gallery"), "pds_test_app");
 }
 
