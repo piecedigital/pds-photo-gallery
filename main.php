@@ -166,6 +166,10 @@ class Gallery {
     }
   }
 
+  function get_all() {
+    return $this->data;
+  }
+
   function save_data() {
     file_put_contents($this->gallery_path, json_encode($this->data));
   }
@@ -239,8 +243,10 @@ function check_and_act_on_query_params($gallery) {
 function purge_query_params() {
   $url = $_SERVER["REQUEST_URI"];
   $parsed_url = parse_url($url);
-  $new_url = $parsed_url["path"] . "?"
-  . "page" . "=" . $_GET["page"];
+  $new_url = $parsed_url["path"];
+  if(array_key_exists("page0", $_GET)) {
+    $new_url .= "?page" . "=" . $_GET["page"];
+  }
   if(array_key_exists("category", $_GET)) {
     $new_url .= "&category" . "=" . $_GET["category"];
   }
@@ -266,7 +272,7 @@ function init() {
   check_and_act_on_query_params($gallery);
 }
 
-function pds_test_app() {
+function pds_photo_gallerys_app() {
   $gallery = &get_gallery();
 
   // $gallery->add_category("Category Name");
@@ -282,11 +288,27 @@ function pds_test_app() {
   include("admin-panel.php");
 }
 
+function pds_output_widget() {
+  $gallery = get_gallery();
+  include("display.php");
+}
+
+function pds_register_widget() {
+  echo "register";
+  register_sidebar(array(
+    "id" => "pds_photo_gallery_area",
+    "name" => "Photo Gallery Area",
+    "before_widget" => "<a>",
+    "after_widget" => "</a>"
+  ));
+  wp_register_sidebar_widget( "pds_photo_gallery", "Photo Gallery", "pds_output_widget"/*, $options = array()*/ );
+}
 
 // initiation
 function pds_test_ui() {
   init();
-  add_media_page(_("Photo Gallery"), _("Photo Gallery"), "manage_options", _("Photo Gallery"), "pds_test_app");
+  add_media_page(_("Photo Gallery"), _("Photo Gallery"), "manage_options", _("Photo Gallery"), "pds_photo_gallerys_app");
 }
 
 add_action( "admin_menu", "pds_test_ui");
+add_action( "widgets_init", "pds_register_widget");

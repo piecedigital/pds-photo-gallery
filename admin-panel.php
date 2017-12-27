@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="<?php echo plugin_dir_url(__FILE__) ?>style.css">
 <?php $base_query = "?page=$_GET[page]"; ?>
+<?php if(array_key_exists("category", $_GET)) $base_query .= "&category=$_GET[category]"; ?>
 
 <div class="pds-photo-gallery">
   <h1 class="main-title">Photo Gallery Admin Panel</h1>
@@ -22,9 +23,9 @@
           <ul>
             <?php foreach($cats as $cat => $cat_value) { ?>
               <li class="gallery-category">
-                <a href="<?php echo $base_query . "&category=$cat_value[slug]"; ?>"><h3><?php echo $cat_value["display_name"]; ?></h3> <h6>(<?php echo count($cat_value["images"]); ?>)</h6></a>
+                <a href="<?php echo $base_query; ?>"><h3><?php echo $cat_value["display_name"]; ?></h3> <h6>(<?php echo count($cat_value["images"]); ?>)</h6></a>
                 <div class="remove-category">
-                  <a href="<?php echo $base_query . "&category=$cat_value[slug]&remove_category=true"; ?>">Remove Category</a>
+                  <a href="<?php echo $base_query . "&remove_category=true"; ?>">Remove Category</a>
                 </div>
               </li>
             <?php } ?>
@@ -53,7 +54,7 @@
                     </div>
                     <div class="tools">
                       <div class="remove-from-category">
-                        <a href="<?php echo $base_query . "&category=$_GET[category]&remove_image=true&img_url=$image_data[url]"; ?>">Remove from Category</a>
+                        <a href="<?php echo $base_query . "&remove_image=true&img_url=$image_data[url]"; ?>">Remove from Category</a>
                       </div>
                     </div>
                   </div>
@@ -95,7 +96,7 @@
               </div>
               <div class="tools">
                 <div class="add-to-category">
-                  <a href="<?php echo $base_query . "&category=$_GET[category]&add_image=true&img_url=$url"; ?>">
+                  <a href="<?php echo $base_query . "&add_image=true&img_url=$url"; ?>">
                     Add To Category
                   </a>
                 </div>
